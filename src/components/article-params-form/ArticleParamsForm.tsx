@@ -2,33 +2,56 @@ import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
 
 import styles from './ArticleParamsForm.module.scss';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import clsx from 'clsx';
-import { ArticleStateType, backgroundColors, contentWidthArr, defaultArticleState, fontColors, fontFamilyOptions, fontSizeOptions, OptionType } from 'src/constants/articleProps';
+import {
+	ArticleStateType,
+	backgroundColors,
+	contentWidthArr,
+	defaultArticleState,
+	fontColors,
+	fontFamilyOptions,
+	fontSizeOptions,
+	OptionType,
+} from 'src/constants/articleProps';
 import { Select } from 'src/ui/select';
 import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
 import { Text } from 'src/ui/text';
+import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
 
 type TArticleParamsFormProps = {
-    articleStyles: ArticleStateType;
+	articleStyles: ArticleStateType;
 	setArticleStyles: React.Dispatch<React.SetStateAction<ArticleStateType>>;
-}
+};
 
-export const ArticleParamsForm = ({ articleStyles, setArticleStyles }: TArticleParamsFormProps) => {
+export const ArticleParamsForm = ({
+	articleStyles,
+	setArticleStyles,
+}: TArticleParamsFormProps) => {
 	const [formState, setFormState] = useState(articleStyles);
 	const [isOpen, setIsOpen] = useState(false);
+	const asideRef = useRef<HTMLDivElement | null>(null);
+	const arrowButtonRef = useRef<HTMLDivElement | null>(null);
 
 	const toggleOpen = () => {
 		setIsOpen((prev) => !prev);
 	};
 
-	const handleChange = (field: keyof ArticleStateType) => (option: OptionType) => {
-    setFormState((prev) => ({
-		...prev,
-		[field]: option,
-		}));
-	};
+	useOutsideClickClose({
+		isOpen,
+		rootRef: asideRef,
+		onChange: setIsOpen,
+		excludeRefs: [arrowButtonRef],
+	});
+
+	const handleChange =
+		(field: keyof ArticleStateType) => (option: OptionType) => {
+			setFormState((prev) => ({
+				...prev,
+				[field]: option,
+			}));
+		};
 
 	const handleSubmit = (e?: React.SyntheticEvent) => {
 		e?.preventDefault();
@@ -42,9 +65,10 @@ export const ArticleParamsForm = ({ articleStyles, setArticleStyles }: TArticleP
 
 	return (
 		<>
-			<ArrowButton isOpen={isOpen} onClick={toggleOpen} />
+			<ArrowButton isOpen={isOpen} onClick={toggleOpen} ref={arrowButtonRef} />
 			<aside
-				className={clsx(styles.container, { [styles.container_open]: isOpen })}>
+				className={clsx(styles.container, { [styles.container_open]: isOpen })}
+				ref={asideRef}>
 				<form className={styles.form}>
 					<Text size={31} weight={800} uppercase>
 						Задайте параметры
@@ -68,7 +92,7 @@ export const ArticleParamsForm = ({ articleStyles, setArticleStyles }: TArticleP
 						onChange={handleChange('fontColor')}
 						title='Цвет шрифта'
 					/>
-					<Separator/>
+					<Separator />
 					<Select
 						selected={formState.backgroundColor}
 						options={backgroundColors}
@@ -82,8 +106,18 @@ export const ArticleParamsForm = ({ articleStyles, setArticleStyles }: TArticleP
 						title='Ширина контента'
 					/>
 					<div className={styles.bottomContainer}>
-						<Button title='Сбросить' htmlType='reset' type='clear' onClick={handleReset}/>
-						<Button title='Применить' htmlType='submit' type='apply' onClick={handleSubmit}/>
+						<Button
+							title='Сбросить'
+							htmlType='reset'
+							type='clear'
+							onClick={handleReset}
+						/>
+						<Button
+							title='Применить'
+							htmlType='submit'
+							type='apply'
+							onClick={handleSubmit}
+						/>
 					</div>
 				</form>
 			</aside>
