@@ -21,11 +21,11 @@ export const useOutsideClickClose = ({
 
 			if (!(target instanceof Node)) return;
 
-			const isClickedOnExcluded = excludeRefs.some((ref) =>
+			const isClickOnExcluded = excludeRefs.some((ref) =>
 				ref.current?.contains(target)
 			);
 
-			if (!rootRef.current?.contains(target) && !isClickedOnExcluded) {
+			if (!rootRef.current?.contains(target) && !isClickOnExcluded) {
 				isOpen && onClose?.();
 				onChange?.(false);
 			} else {
