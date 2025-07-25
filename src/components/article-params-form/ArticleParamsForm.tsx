@@ -19,6 +19,7 @@ import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
 import { Text } from 'src/ui/text';
 import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
+import { useEnterFormSubmit } from './hooks/useEnterFormSubmit';
 
 type TArticleParamsFormProps = {
 	articleStyles: ArticleStateType;
@@ -30,18 +31,18 @@ export const ArticleParamsForm = ({
 	setArticleStyles,
 }: TArticleParamsFormProps) => {
 	const [formState, setFormState] = useState(articleStyles);
-	const [isOpen, setIsOpen] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const asideRef = useRef<HTMLDivElement | null>(null);
 	const arrowButtonRef = useRef<HTMLDivElement | null>(null);
 
-	const toggleOpen = () => {
-		setIsOpen((prev) => !prev);
+	const toggleMenuOpen = () => {
+		setIsMenuOpen((prev) => !prev);
 	};
 
 	useOutsideClickClose({
-		isOpen,
+		isOpen: isMenuOpen,
 		rootRef: asideRef,
-		onChange: setIsOpen,
+		onChange: setIsMenuOpen,
 		excludeRefs: [arrowButtonRef],
 	});
 
@@ -53,23 +54,38 @@ export const ArticleParamsForm = ({
 			}));
 		};
 
-	const handleSubmit = (e?: React.SyntheticEvent) => {
-		e?.preventDefault();
-		setArticleStyles(formState);
-	};
-
 	const handleReset = () => {
 		setFormState(defaultArticleState);
 		setArticleStyles(defaultArticleState);
 	};
 
+	const submitForm = () => {
+		setArticleStyles(formState);
+	};
+
+	const handleSubmit = (e?: React.SyntheticEvent) => {
+		e?.preventDefault();
+		submitForm();
+	};
+
+	useEnterFormSubmit({
+		isFormOpen: isMenuOpen,
+		onSubmit: submitForm,
+	});
+
 	return (
 		<>
-			<ArrowButton isOpen={isOpen} onClick={toggleOpen} ref={arrowButtonRef} />
+			<ArrowButton
+				isOpen={isMenuOpen}
+				onClick={toggleMenuOpen}
+				ref={arrowButtonRef}
+			/>
 			<aside
-				className={clsx(styles.container, { [styles.container_open]: isOpen })}
+				className={clsx(styles.container, {
+					[styles.container_open]: isMenuOpen,
+				})}
 				ref={asideRef}>
-				<form className={styles.form}>
+				<form className={styles.form} onSubmit={handleSubmit}>
 					<Text size={31} weight={800} uppercase>
 						Задайте параметры
 					</Text>
@@ -112,12 +128,7 @@ export const ArticleParamsForm = ({
 							type='clear'
 							onClick={handleReset}
 						/>
-						<Button
-							title='Применить'
-							htmlType='submit'
-							type='apply'
-							onClick={handleSubmit}
-						/>
+						<Button title='Применить' htmlType='submit' type='apply' />
 					</div>
 				</form>
 			</aside>
